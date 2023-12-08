@@ -13,7 +13,7 @@ export const topicSelect = $('topics');
 export const closebtn = $('closebtn')
 
 // topic name
-//let topic
+let currentTopic = ""
 
 /**
  * initialize all UI and event handlers    
@@ -21,12 +21,12 @@ export const closebtn = $('closebtn')
  * @param {string} topic the topic name (data-key) 
  */
 export function init(topic) {
-
+   currentTopic = topic
    // assemble the topics drop-down UI
    buildTopics()
 
    // get all stored tasks for this topic
-   getTasks(topic)
+   getTasks(currentTopic)
 
    // todo input keydown handler
    on(todoInput, "keydown", function (event) {
@@ -44,9 +44,9 @@ export function init(topic) {
 
    // topic select change handler
    on(topicSelect, 'change', () => {
-      topic = topicSelect.value.toLowerCase() 
-      getTasks(topic)
-      refreshDisplay();
+      currentTopic = topicSelect.value.toLowerCase() 
+      console.log(`topicSelect change `, currentTopic)
+      getTasks(currentTopic)
    }) 
 
    // close button click handler

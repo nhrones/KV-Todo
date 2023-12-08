@@ -98,13 +98,13 @@ See: readme.md.`)
     * get row from key
     */
    get(key) {
-      console.log(`Get called with key = `, key)
+      const start = performance.now()
+      console.log(`Get called with key = "${key}"`)
       return new Promise((resolve, _reject) => {
-
          // persist single record to the service
          Call("GET", { key: key })
             .then((result) => {
-               console.info('GET call returned ', result)
+               console.info(`GET call returned ${result} in ${performance.now() - start}`)
                if (typeof result.value === "string") {
                   resolve(JSON.parse(result.value))
                } else {
@@ -118,24 +118,15 @@ See: readme.md.`)
     * The `set` method mutates - will call the `persist` method. 
     */
    set(key, value) {
-      console.log(`set call key = `, key)
-      try {
+      console.log(`dbClient set "${key}", ${value}`)
+      return new Promise((resolve, _reject) => {
          // persist single record to the service
-         Call("SET",
-            {
-               key: key,
-               value: value,
-               currentPage: this.currentPage,
-               rowsPerPage: this.rowsPerPage
-            })
+         Call("SET", { key: key, value: value })
             .then((result) => {
-               console.info('SET call returned ', result.querySet)
-               this.querySet = result.querySet
-               return this.querySet
+               console.info('SET call returned ', result)
+               resolve(result)
             })
-      } catch (e) {
-         return { Error: e }
-      }
+      })
    }
 
    /** 

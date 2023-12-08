@@ -1,5 +1,6 @@
 import { buildSelectElement } from './selectBuilder.js'
 import { DbClient } from './dbClient.js'
+import { refreshDisplay } from './tasks.js'
 
 const DBServiceURL = 'http://localhost:9099'
 const thisDB = new DbClient(DBServiceURL)
@@ -19,6 +20,7 @@ let keyName = 'topics'
  */
 export function getTasks(key = "") {
    keyName = key
+   console.log('getTasks key = ', keyName)
    if (key.length) {
       thisDB.get([key]).then((data) => {
          console.info(`data for ${key} = `, data)
@@ -27,6 +29,7 @@ export function getTasks(key = "") {
          } else {
             tasks = data
          }
+         refreshDisplay();
       })
    }
 }
@@ -55,10 +58,15 @@ export const buildTopics = (raw) => {
  * Save all tasks to local storage
  */
 export function saveTasks() {
-   //localStorage.setItem(keyName, JSON.stringify(tasks, null, 2));
-   thisDB.set([keyName], JSON.stringify(tasks, null, 2)).then((result) => {
-      console.info('save ', result)
-   })
+   const value = JSON.stringify(tasks, null, 2)
+   console.log(`SaveTasks - setting "${keyName}" to ${value}`)
+   thisDB.set([keyName], value)
+      .then((result) => {
+         console.log(`saveTasks saved: ${value}`)
+         thisDB.get([keyName]).then ((result)=> {
+            console.info(`get returned ${keyName} = `, result )
+         })
+      })
 }
 
 /** 

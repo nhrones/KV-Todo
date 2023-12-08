@@ -24,7 +24,7 @@ export function addTask() {
  */
 export function refreshDisplay() {
    todoList.innerHTML = "";
-   
+
    tasks.forEach((item, index) => {
       const p = document.createElement("p");
       p.innerHTML = taskTemplate(index, item)
@@ -37,7 +37,7 @@ export function refreshDisplay() {
 
          const todoItem = e.target;
          const existingText = tasks[index].text;
- 
+
          const editElement = document.createElement("textarea");
          editElement.setAttribute("rows", 6);
          editElement.setAttribute("cols", 62);
@@ -63,7 +63,6 @@ export function refreshDisplay() {
          const index = e.target.dataset.index
          tasks[index].disabled = !tasks[index].disabled;
          saveTasks()
-         refreshDisplay();
       });
       todoList.appendChild(p);
    });
