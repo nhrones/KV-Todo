@@ -29,7 +29,7 @@ export class DbClient {
          let connectAttemps = 0
          console.log("CONNECTING");
 
-         const eventSource = new EventSource(DBServiceURL + "SSERPC/sseRegistration");
+         const eventSource = new EventSource(`${DBServiceURL}SSERPC/kvRegistration`);
 
          eventSource.addEventListener("open", () => {
             console.log("CONNECTED");
@@ -104,11 +104,12 @@ See: readme.md.`)
          // persist single record to the service
          Call("GET", { key: key })
             .then((result) => {
+               console.info('GET result ',result)
                console.info(`GET call returned ${result} in ${performance.now() - start}`)
                if (typeof result.value === "string") {
-                  resolve(JSON.parse(result.value))
+                  resolve(result.value)
                } else {
-                  console.log('Ooopppps: ', typeof result)
+                  resolve(JSON.stringify(result.value))
                }
             })
       })
@@ -170,7 +171,7 @@ export const Call = (procedure, params) => {
             return reject(new Error(error));
          resolve(result);
       });
-      fetch(DBServiceURL + 'SSERPC/rpcRequests', {
+      fetch(DBServiceURL + 'SSERPC/kvRequest', {
          method: "POST",
          mode: 'cors',
          body: JSON.stringify({ txID, procedure, params })

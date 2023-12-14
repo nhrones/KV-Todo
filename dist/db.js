@@ -14,18 +14,25 @@ export let tasks = []
 let keyName = 'topics'
 
 /**
- * Retrieve array of tasks from local storage     
+ * Retrieve array of tasks the service     
  * or initialize an empty task array 
  * @param {string} key the name of the record to fetch (data-key)
  */
 export function getTasks(key = "") {
    keyName = key
+
+
+
+
    console.log('getTasks key = ', keyName)
    if (key.length) {
       thisDB.get([key]).then((data) => {
          console.info(`data for ${key} = `, data)
+         if (data === null) {
+            console.log(`No data found for ${keyName}`)
+         }
          if (typeof data === 'string') {
-            tasks = JSON.parse(raw) || []
+            tasks = JSON.parse(data) || []
          } else {
             tasks = data
          }
@@ -37,19 +44,37 @@ export function getTasks(key = "") {
 /**
  * build a set of select options
  */
-export const buildTopics = (raw) => {
+export const buildTopics = () => {
 
    thisDB.get(['topics']).then((data) => {
       let parsedTopics
       if (typeof data === 'string') {
-         parsedTopics = JSON.parse(raw)
+         console.log('data ', data)
+         parsedTopics = JSON.parse(data)
       } else {
          parsedTopics = data
       }
       console.info('parsedTopics ', parsedTopics)
-      for (let index = 0; index < parsedTopics.length; index++) {
-         const options = JSON.parse(`${parsedTopics[index].text}`)
-         buildSelectElement(options)
+      if (parsedTopics != null) {
+         for (let index = 0; index < parsedTopics.length; index++) {
+            const options = JSON.parse(`${parsedTopics[index].text}`)
+            buildSelectElement(options)
+         }
+      } else {
+         console.log(`No topics!`)
+         // build a basic topic record and save it
+         keyName = 'topics'
+         tasks = [
+            { 
+               text: `{"Todos": [{ "name": "App One", "value": "app1" }] }`
+            },
+            {
+               text: `{"Topics": [{ "name": "Todo App Topics", "value": "topics" }] }`,
+               disabled: false
+            }
+         ]
+         saveTasks()
+         buildTopics()
       }
    })
 }
@@ -61,10 +86,10 @@ export function saveTasks() {
    const value = JSON.stringify(tasks, null, 2)
    console.log(`SaveTasks - setting "${keyName}" to ${value}`)
    thisDB.set([keyName], value)
-      .then((result) => {
+      .then((_result) => {
          console.log(`saveTasks saved: ${value}`)
-         thisDB.get([keyName]).then ((result)=> {
-            console.info(`get returned ${keyName} = `, result )
+         thisDB.get([keyName]).then((result) => {
+            console.info(`get returned ${keyName} = `, result)
          })
       })
 }
