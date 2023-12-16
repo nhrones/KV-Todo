@@ -21,12 +21,10 @@ let keyName = 'topics'
 export function getTasks(key = "") {
    keyName = key
 
-
-
-
    console.log('getTasks key = ', keyName)
+
    if (key.length) {
-      thisDB.get([key]).then((data) => {
+      thisDB.get(["TODO", key]).then((data) => {
          console.info(`data for ${key} = `, data)
          if (data === null) {
             console.log(`No data found for ${keyName}`)
@@ -46,7 +44,7 @@ export function getTasks(key = "") {
  */
 export const buildTopics = () => {
 
-   thisDB.get(['topics']).then((data) => {
+   thisDB.get(["TODO", "topics"]).then((data) => {
       let parsedTopics
       if (typeof data === 'string') {
          console.log('data ', data)
@@ -85,10 +83,10 @@ export const buildTopics = () => {
 export function saveTasks() {
    const value = JSON.stringify(tasks, null, 2)
    console.log(`SaveTasks - setting "${keyName}" to ${value}`)
-   thisDB.set([keyName], value)
+   thisDB.set(["TODO", keyName], value)
       .then((_result) => {
          console.log(`saveTasks saved: ${value}`)
-         thisDB.get([keyName]).then((result) => {
+         thisDB.get(["TODO", keyName]).then((result) => {
             console.info(`get returned ${keyName} = `, result)
          })
       })
