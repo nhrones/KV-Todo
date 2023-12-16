@@ -10,10 +10,10 @@
          "args": [
             "-A",
             "--unstable",
-            "server.ts"
+            "rpcService.ts"
          ],
          "options": {
-            "cwd": "../KV-Todo-RPC/"
+            "cwd": "C:/Users/nhron/dev/GitHub/DB/Bueno/BuenoRPC"
          },
          "problemMatcher": [
             "$deno"
