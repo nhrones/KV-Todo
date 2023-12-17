@@ -55,8 +55,12 @@ export const buildTopics = () => {
       console.info('parsedTopics ', parsedTopics)
       if (parsedTopics != null) {
          for (let index = 0; index < parsedTopics.length; index++) {
-            const options = JSON.parse(`${parsedTopics[index].text}`)
-            buildSelectElement(options)
+            try{
+               const options = JSON.parse(`${parsedTopics[index].text}`)
+               buildSelectElement(options)
+            } catch (_err) {
+               console.log('error parsing: ', parsedTopics[index].text)
+            }
          }
       } else {
          console.log(`No topics!`)
