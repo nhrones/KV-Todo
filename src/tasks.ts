@@ -1,7 +1,8 @@
-import { on } from './utils.js'
-import { todoInput } from './dom.js'
-import { tasks, saveTasks } from './db.js';
-import { taskTemplate } from './templates.js'
+// deno-lint-ignore-file no-explicit-any
+import { on } from './utils.ts'
+import { todoCount, todoInput, todoList } from './dom.ts'
+import { tasks, saveTasks } from './db.ts';
+import { taskTemplate } from './templates.ts'
 
 /**
  * Add a new task
@@ -29,7 +30,7 @@ export function refreshDisplay() {
       const p = document.createElement("p");
       p.innerHTML = taskTemplate(index, item)
 
-      on(p, 'click', (e) => {
+      on(p, 'click', (e: any) => {
          // lets the checkbox-change handler below work
          if (e.target.type === 'checkbox') return;
          // ignore all `textarea` elements
@@ -39,8 +40,8 @@ export function refreshDisplay() {
          const existingText = tasks[index].text;
 
          const editElement = document.createElement("textarea");
-         editElement.setAttribute("rows", 6);
-         editElement.setAttribute("cols", 62);
+         editElement.setAttribute("rows", "6"); //HACK
+         editElement.setAttribute("cols", "62");
          editElement.setAttribute("wrap", "hard");
          editElement.setAttribute("autocorrect", "on");
          editElement.value = existingText;
@@ -58,7 +59,7 @@ export function refreshDisplay() {
       })
 
       // handle the `completed` checkbox change event
-      on(p.querySelector(".todo-checkbox"), "change", (e) => {
+      on(p.querySelector(".todo-checkbox"), "change", (e: any) => {
          e.preventDefault()
          const index = e.target.dataset.index
          tasks[index].disabled = !tasks[index].disabled;
@@ -68,6 +69,6 @@ export function refreshDisplay() {
    });
 
    // update the task count
-   todoCount.textContent = tasks.length;
+   todoCount.textContent = ""+tasks.length;
 }
 

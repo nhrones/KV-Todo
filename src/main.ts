@@ -1,5 +1,9 @@
-import { init } from './dom.js'
-import { DbClient } from './dbClient.js'
+/// <reference lib="dom" />
+
+
+
+import { init } from './dom.ts'
+import { DbClient } from './dbClient.ts'
 
 const RunningLocal = (window.location.href === "http://localhost:8080/");
 console.log(`RunningLocal`, RunningLocal);

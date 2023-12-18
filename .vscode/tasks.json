@@ -20,6 +20,11 @@
          ]
       },
       {
+         "label": "BUILD",
+         "type": "shell",
+         "command": "build",
+      },
+      {
          "label": "APP",
          "type": "shell",
          "command": "serve",

@@ -1,6 +1,6 @@
-import { buildSelectElement } from './selectBuilder.js'
-import { DbClient } from './dbClient.js'
-import { refreshDisplay } from './tasks.js'
+import { buildSelectElement } from './selectBuilder.ts'
+import { DbClient } from './dbClient.ts'
+import { refreshDisplay } from './tasks.ts'
 
 const DBServiceURL = 'http://localhost:9099'
 const thisDB = new DbClient(DBServiceURL)
@@ -8,7 +8,7 @@ const thisDB = new DbClient(DBServiceURL)
 
 
 /** an array of todo tasks to be presented */
-export let tasks = []
+export let tasks:{ text: string, disabled: boolean }[] = []
 
 /** the name of a data-key */
 let keyName = 'topics'
@@ -32,6 +32,7 @@ export function getTasks(key = "") {
          if (typeof data === 'string') {
             tasks = JSON.parse(data) || []
          } else {
+            //@ts-ignore ?
             tasks = data
          }
          refreshDisplay();
@@ -68,7 +69,8 @@ export const buildTopics = () => {
          keyName = 'topics'
          tasks = [
             { 
-               text: `{"Todos": [{ "name": "App One", "value": "app1" }] }`
+               text: `{"Todos": [{ "name": "App One", "value": "app1" }] }`, 
+               disabled: false 
             },
             {
                text: `{"Topics": [{ "name": "Todo App Topics", "value": "topics" }] }`,
@@ -100,7 +102,8 @@ export function saveTasks() {
  * Delete completed tasks
  */
 export function deleteCompleted() {
-   const savedtasks = []
+
+   const savedtasks:{ text: string, disabled: boolean }[] = []
    tasks.forEach((task) => {
       if (task.disabled === false) savedtasks.push(task)
    })

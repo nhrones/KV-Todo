@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-explicit-any
 
 //let LOCAL_DEV = false
 //==========================================
@@ -17,14 +18,14 @@ export class DbClient {
 
    querySet = []
 
-   constructor(serviceURL) {
+   constructor(serviceURL: string) {
       //fix url ending
       DBServiceURL = (serviceURL.endsWith('/'))
          ? serviceURL
          : serviceURL += '/';
    }
    /** initialize our EventSource and fetch some data */
-   init() {
+   init():Promise<void> {
       return new Promise((resolve, reject) => {
          let connectAttemps = 0
          console.log("CONNECTING");
@@ -97,7 +98,7 @@ See: readme.md.`)
    /**
     * get row from key
     */
-   get(key) {
+   get(key: any) {
       const start = performance.now()
       console.log(`Get called with key = "${key}"`)
       return new Promise((resolve, _reject) => {
@@ -106,9 +107,12 @@ See: readme.md.`)
             .then((result) => {
                console.info('GET result ',result)
                console.info(`GET call returned ${result} in ${performance.now() - start}`)
+               //@ts-ignore ?
                if (typeof result.value === "string") {
+                  //@ts-ignore ?
                   resolve(result.value)
                } else {
+                  //@ts-ignore ?
                   resolve(JSON.stringify(result.value))
                }
             })
@@ -118,7 +122,7 @@ See: readme.md.`)
    /** 
     * The `set` method mutates - will call the `persist` method. 
     */
-   set(key, value) {
+   set(key: any, value: any) {
       console.log(`dbClient set "${key}", ${value}`)
       return new Promise((resolve, _reject) => {
          // persist single record to the service
@@ -133,11 +137,13 @@ See: readme.md.`)
    /** 
     * The `delete` method mutates - will call the `persist` method. 
     */
-   delete(key) {
+   delete(key: any) {
       try {
          Call("DELETE", { key: key })
             .then((result) => {
+               //@ts-ignore ?
                this.querySet = result.querySet
+               //@ts-ignore ?
                this.totalPages = result.totalPages
                return this.querySet
             })
@@ -159,14 +165,14 @@ See: readme.md.`)
  *   When this promise resolves or rejects, the transaction is retrieved by ID    
  *   and executed by the promise. 
  */
-export const Call = (procedure, params) => {
+export const Call = (procedure: any, params: any) => {
 
    const txID = nextMsgID++;
 
    //console.log(`RPC msg ${txID} called ${procedure} with ${JSON.stringify(params)}`);
 
    return new Promise((resolve, reject) => {
-      transactions.set(txID, (error, result) => {
+      transactions.set(txID, (error: any, result: any) => {
          if (error)
             return reject(new Error(error));
          resolve(result);

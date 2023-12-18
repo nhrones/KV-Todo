@@ -1,5 +1,5 @@
 
-import { $ } from './utils.js'
+import { $ } from './utils.ts'
 
 /** 
  * Build the select element.
