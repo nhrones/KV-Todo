@@ -8,7 +8,7 @@ const thisDB = new DbClient(DBServiceURL)
 
 
 /** an array of todo tasks to be presented */
-export let tasks:{ text: string, disabled: boolean }[] = []
+export let tasks: { text: string, disabled: boolean }[] = []
 
 /** the name of a data-key */
 let keyName = 'topics'
@@ -20,12 +20,8 @@ let keyName = 'topics'
  */
 export function getTasks(key = "") {
    keyName = key
-
-   console.log('getTasks key = ', keyName)
-
    if (key.length) {
       thisDB.get(["TODO", key]).then((data) => {
-         console.info(`data for ${key} = `, data)
          if (data === null) {
             console.log(`No data found for ${keyName}`)
          }
@@ -48,15 +44,13 @@ export const buildTopics = () => {
    thisDB.get(["TODO", "topics"]).then((data) => {
       let parsedTopics
       if (typeof data === 'string') {
-         console.log('data ', data)
          parsedTopics = JSON.parse(data)
       } else {
          parsedTopics = data
       }
-      console.info('parsedTopics ', parsedTopics)
       if (parsedTopics != null) {
          for (let index = 0; index < parsedTopics.length; index++) {
-            try{
+            try {
                const options = JSON.parse(`${parsedTopics[index].text}`)
                buildSelectElement(options)
             } catch (_err) {
@@ -68,9 +62,9 @@ export const buildTopics = () => {
          // build a basic topic record and save it
          keyName = 'topics'
          tasks = [
-            { 
-               text: `{"Todos": [{ "name": "App One", "value": "app1" }] }`, 
-               disabled: false 
+            {
+               text: `{"Todos": [{ "name": "App One", "value": "app1" }] }`,
+               disabled: false
             },
             {
                text: `{"Topics": [{ "name": "Todo App Topics", "value": "topics" }] }`,
@@ -91,10 +85,7 @@ export function saveTasks() {
    console.log(`SaveTasks - setting "${keyName}" to ${value}`)
    thisDB.set(["TODO", keyName], value)
       .then((_result) => {
-         console.log(`saveTasks saved: ${value}`)
-         thisDB.get(["TODO", keyName]).then((result) => {
-            console.info(`get returned ${keyName} = `, result)
-         })
+         thisDB.get(["TODO", keyName])
       })
 }
 
@@ -103,7 +94,7 @@ export function saveTasks() {
  */
 export function deleteCompleted() {
 
-   const savedtasks:{ text: string, disabled: boolean }[] = []
+   const savedtasks: { text: string, disabled: boolean }[] = []
    tasks.forEach((task) => {
       if (task.disabled === false) savedtasks.push(task)
    })
