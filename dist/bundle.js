@@ -55,7 +55,7 @@ var DbClient = class {
     return new Promise((resolve, reject) => {
       let connectAttemps = 0;
       console.log("CONNECTING");
-      const eventSource = new EventSource(`${DBServiceURL}SSERPC/kvRegistration?${this.client}`);
+      const eventSource = new EventSource(`${DBServiceURL}SSERPC/kvRegistration?client=${this.client}`);
       eventSource.addEventListener("open", () => {
         console.log("CONNECTED");
         resolve();
