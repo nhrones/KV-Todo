@@ -44,8 +44,10 @@ var nextMsgID = 0;
 var DBServiceURL = "";
 var transactions = /* @__PURE__ */ new Map();
 var DbClient = class {
-  constructor(serviceURL) {
+  constructor(serviceURL, client = "todo") {
+    this.client = "unknown";
     this.querySet = [];
+    this.client = client;
     DBServiceURL = serviceURL.endsWith("/") ? serviceURL : serviceURL += "/";
   }
   /** initialize our EventSource and fetch some data */
@@ -53,7 +55,7 @@ var DbClient = class {
     return new Promise((resolve, reject) => {
       let connectAttemps = 0;
       console.log("CONNECTING");
-      const eventSource = new EventSource(`${DBServiceURL}SSERPC/kvRegistration`);
+      const eventSource = new EventSource(`${DBServiceURL}SSERPC/kvRegistration?${this.client}`);
       eventSource.addEventListener("open", () => {
         console.log("CONNECTED");
         resolve();

@@ -15,10 +15,11 @@ const transactions = new Map();
  * This db client communicates with an RPC service.    
  */
 export class DbClient {
-
+   client = 'unknown'
    querySet = []
 
-   constructor(serviceURL: string) {
+   constructor(serviceURL: string, client = "todo") {
+      this.client = client
       //fix url ending
       DBServiceURL = (serviceURL.endsWith('/'))
          ? serviceURL
@@ -30,7 +31,7 @@ export class DbClient {
          let connectAttemps = 0
          console.log("CONNECTING");
 
-         const eventSource = new EventSource(`${DBServiceURL}SSERPC/kvRegistration`);
+         const eventSource = new EventSource(`${DBServiceURL}SSERPC/kvRegistration?${this.client}`);
 
          eventSource.addEventListener("open", () => {
             console.log("CONNECTED");
