@@ -21,8 +21,8 @@ let currentTopic = ""
  * called once on start up
  * @param {string} topic the topic name (data-key) 
  */
-export function init(topic: string) {
-   currentTopic = topic
+export function init() {
+
    // assemble the topics drop-down UI
    buildTopics()
 

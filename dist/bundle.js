@@ -353,8 +353,7 @@ var deleteCompletedBtn = $("deletecompleted");
 var topicSelect = $("topics");
 var closebtn = $("closebtn");
 var currentTopic = "";
-function init(topic) {
-  currentTopic = topic;
+function init() {
   buildTopics();
   getTasks(currentTopic);
   on(todoInput, "keydown", function(event) {
@@ -388,6 +387,6 @@ __name(init, "init");
 var RunningLocal = window.location.href === "http://localhost:8080/";
 console.log(`RunningLocal`, RunningLocal);
 var dbServiceURL = RunningLocal ? "http://localhost:9099" : "https://bueno-rpc.deno.dev/";
-var thisDB2 = new DbClient(dbServiceURL);
+var thisDB2 = new DbClient(dbServiceURL, "todo");
 await thisDB2.init();
 init();

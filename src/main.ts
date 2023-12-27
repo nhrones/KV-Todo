@@ -12,7 +12,7 @@ const dbServiceURL = (RunningLocal)
    : 'https://bueno-rpc.deno.dev/'
 
 
-const thisDB = new DbClient(dbServiceURL)
+const thisDB = new DbClient(dbServiceURL, "todo")
 
 await thisDB.init()
 
