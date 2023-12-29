@@ -8,7 +8,7 @@ console.log(`RunningLocal`, RunningLocal);
 
 const dbServiceURL = (RunningLocal) 
    ? 'http://localhost:9099'
-   : 'https://bueno-rpc.deno.dev/'
+   : 'https://todo-rpc.deno.dev/'
 
 // initialize the DB client
 await DB.init(dbServiceURL)
