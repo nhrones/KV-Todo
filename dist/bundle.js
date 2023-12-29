@@ -449,6 +449,6 @@ __name(deleteCompleted, "deleteCompleted");
 // src/main.ts
 var RunningLocal = window.location.href === "http://localhost:8080/";
 console.log(`RunningLocal`, RunningLocal);
-var dbServiceURL = RunningLocal ? "http://localhost:9099" : "https://bueno-rpc.deno.dev/";
+var dbServiceURL = RunningLocal ? "http://localhost:9099" : "https://todo-rpc.deno.dev/";
 await init2(dbServiceURL);
 init();
