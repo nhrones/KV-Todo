@@ -1,11 +1,14 @@
 import { buildSelectElement } from './selectBuilder.ts'
-import { DbClient } from './dbClient.ts'
+import { DbClient } from './deps.ts'
 import { refreshDisplay } from './tasks.ts'
 
-const DBServiceURL = 'http://localhost:9099'
-const thisDB = new DbClient(DBServiceURL)
+// db
+let thisDB: DbClient
 
-
+export async function init(dbServiceURL: string) {
+   thisDB = new DbClient(dbServiceURL, "KV", "todo")
+   await thisDB.init()
+}
 
 /** an array of todo tasks to be presented */
 export let tasks: { text: string, disabled: boolean }[] = []
@@ -81,12 +84,9 @@ export const buildTopics = () => {
  * Save all tasks to local storage
  */
 export function saveTasks() {
-   const value = JSON.stringify(tasks, null, 2)
-   console.log(`SaveTasks - setting "${keyName}" to ${value}`)
+   const value = JSON.stringify(tasks, null, 2);
+   console.log(`SaveTasks - setting "${keyName}" to ${value}`);
    thisDB.set(["TODO", keyName], value)
-      .then((_result) => {
-         thisDB.get(["TODO", keyName])
-      })
 }
 
 /** 

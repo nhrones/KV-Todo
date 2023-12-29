@@ -39,28 +39,54 @@ function addOptionGroup(selectElement, label, options) {
 }
 __name(addOptionGroup, "addOptionGroup");
 
-// src/dbClient.ts
-var nextMsgID = 0;
-var DBServiceURL = "";
+// https://raw.githubusercontent.com/nhrones/BuenoRPC-Client/main/context.ts
+var CTX = {
+  DEBUG: false,
+  DBServiceURL: "",
+  registrationURL: "",
+  requestURL: ""
+};
+
+// https://raw.githubusercontent.com/nhrones/BuenoRPC-Client/main/dbClient.ts
+var { DBServiceURL, DEBUG, registrationURL, requestURL } = CTX;
+var nextTxID = 0;
 var transactions = /* @__PURE__ */ new Map();
 var DbClient = class {
-  constructor(serviceURL, client = "todo") {
-    this.client = "unknown";
+  /**
+   * Creates a new DBClient instance
+   * @param serviceURL - the url for the RPC service
+   * @param serviceType - the type of service to register for
+   */
+  constructor(serviceURL, serviceType, client = "unknown") {
     this.querySet = [];
-    this.client = client;
     DBServiceURL = serviceURL.endsWith("/") ? serviceURL : serviceURL += "/";
+    switch (serviceType) {
+      case "IO":
+        registrationURL = DBServiceURL + `SSERPC/ioRegistration?client=${client}`, requestURL = DBServiceURL + "SSERPC/ioRequest";
+        break;
+      case "KV":
+        registrationURL = DBServiceURL + `SSERPC/kvRegistration?client=${client}`, requestURL = DBServiceURL + "SSERPC/kvRequest";
+        break;
+      case "RELAY":
+        registrationURL = DBServiceURL + `SSERPC/relayRegistration?client=${client}`, requestURL = DBServiceURL + "SSERPC/relayRequest";
+        break;
+      default:
+        break;
+    }
   }
-  /** initialize our EventSource and fetch some data */
+  /** 
+   * initialize our EventSource and fetch initial data 
+   * */
   init() {
     return new Promise((resolve, reject) => {
       let connectAttemps = 0;
       console.log("CONNECTING");
-      const eventSource = new EventSource(`${DBServiceURL}SSERPC/kvRegistration?client=${this.client}`);
-      eventSource.addEventListener("open", () => {
+      const eventSource = new EventSource(registrationURL);
+      eventSource.onopen = () => {
         console.log("CONNECTED");
         resolve();
-      });
-      eventSource.addEventListener("error", (_e) => {
+      };
+      eventSource.onerror = (_e) => {
         switch (eventSource.readyState) {
           case EventSource.OPEN:
             console.log("CONNECTED");
@@ -81,8 +107,10 @@ See: readme.md.`);
             reject();
             break;
         }
-      });
-      eventSource.addEventListener("message", (evt) => {
+      };
+      eventSource.onmessage = (evt) => {
+        if (DEBUG)
+          console.info("events.onmessage - ", evt.data);
         const parsed = JSON.parse(evt.data);
         const { txID, error, result } = parsed;
         if (!transactions.has(txID))
@@ -91,7 +119,7 @@ See: readme.md.`);
         transactions.delete(txID);
         if (transaction)
           transaction(error, result);
-      });
+      };
     });
   }
   /**
@@ -99,7 +127,7 @@ See: readme.md.`);
    */
   fetchQuerySet() {
     return new Promise((resolve, _reject) => {
-      Call("GETALL", {}).then((result) => {
+      rpcRequest("GETALL", {}).then((result) => {
         if (typeof result === "string") {
           resolve(JSON.parse(result));
         } else {
@@ -108,14 +136,24 @@ See: readme.md.`);
       });
     });
   }
+  // /**
+  //  * get row from key
+  //  */
+  // get(key: string) {
+  //    for (let index = 0; index < this.querySet.length; index++) {
+  //       const element = this.querySet[index];
+  //       //@ts-ignore ?
+  //       if (element.id === key) return element
+  //    }
+  // }
   /**
    * get row from key
    */
   get(key) {
     const start = performance.now();
-    console.log(`Get called with key = "${key}"`);
+    console.info(`Get called with key = `, key);
     return new Promise((resolve, _reject) => {
-      Call("GET", { key }).then((result) => {
+      rpcRequest("GET", { key }).then((result) => {
         console.info("GET result ", result);
         console.info(`GET call returned ${result} in ${performance.now() - start}`);
         if (typeof result.value === "string") {
@@ -130,20 +168,33 @@ See: readme.md.`);
    * The `set` method mutates - will call the `persist` method. 
    */
   set(key, value) {
-    console.log(`dbClient set "${key}", ${value}`);
-    return new Promise((resolve, _reject) => {
-      Call("SET", { key, value }).then((result) => {
-        console.info("SET call returned ", result);
-        resolve(result);
+    console.log(`set call key = `, key);
+    try {
+      rpcRequest(
+        "SET",
+        {
+          key,
+          value,
+          //@ts-ignore ?
+          currentPage: this.currentPage,
+          //@ts-ignore ?
+          rowsPerPage: this.rowsPerPage
+        }
+      ).then((result) => {
+        console.info("SET call returned ", result.querySet);
+        this.querySet = result.querySet;
+        return this.querySet;
       });
-    });
+    } catch (e) {
+      return { Error: e };
+    }
   }
   /** 
    * The `delete` method mutates - will call the `persist` method. 
    */
   delete(key) {
     try {
-      Call("DELETE", { key }).then((result) => {
+      rpcRequest("DELETE", { key }).then((result) => {
         this.querySet = result.querySet;
         this.totalPages = result.totalPages;
         return this.querySet;
@@ -152,99 +203,97 @@ See: readme.md.`);
       return { Error: _e };
     }
   }
+  /** 
+   * The `clearAll` method removes all records from the DB. 
+   */
+  async clearAll() {
+    try {
+      await rpcRequest("CLEARALL", { key: [""] });
+    } catch (_e) {
+      return { Error: _e };
+    }
+  }
 };
 __name(DbClient, "DbClient");
-var Call = /* @__PURE__ */ __name((procedure, params) => {
-  const txID = nextMsgID++;
+var rpcRequest = /* @__PURE__ */ __name((procedure, params) => {
+  const thisID = nextTxID++;
   return new Promise((resolve, reject) => {
-    transactions.set(txID, (error, result) => {
+    transactions.set(thisID, (error, result) => {
       if (error)
         return reject(new Error(error));
       resolve(result);
     });
-    fetch(DBServiceURL + "SSERPC/kvRequest", {
+    fetch(requestURL, {
       method: "POST",
-      mode: "cors",
-      body: JSON.stringify({ txID, procedure, params })
+      mode: "no-cors",
+      body: JSON.stringify({ txID: thisID, procedure, params })
     });
   });
-}, "Call");
+}, "rpcRequest");
 
-// src/db.ts
-var DBServiceURL2 = "http://localhost:9099";
-var thisDB = new DbClient(DBServiceURL2);
-var tasks = [];
-var keyName = "topics";
-function getTasks(key = "") {
-  keyName = key;
-  if (key.length) {
-    thisDB.get(["TODO", key]).then((data) => {
-      if (data === null) {
-        console.log(`No data found for ${keyName}`);
-      }
-      if (typeof data === "string") {
-        tasks = JSON.parse(data) || [];
-      } else {
-        tasks = data;
-      }
-      refreshDisplay();
-    });
+// src/export.ts
+function exportData() {
+  const data = Object.assign({}, localStorage);
+  let content = "";
+  for (const element in data) {
+    content += formatData(data[element], element);
+    console.log(content);
   }
+  ;
+  saveDataFile("data-dump.txt", content);
 }
-__name(getTasks, "getTasks");
-var buildTopics = /* @__PURE__ */ __name(() => {
-  thisDB.get(["TODO", "topics"]).then((data) => {
-    let parsedTopics;
-    if (typeof data === "string") {
-      parsedTopics = JSON.parse(data);
-    } else {
-      parsedTopics = data;
+__name(exportData, "exportData");
+function formatData(jsonValue, element) {
+  const parsedValue = JSON.parse(jsonValue);
+  const len = parsedValue.length;
+  let dataString = `
+${element}:`;
+  for (let i = 0; i < len; i++) {
+    dataString += `
+   ${JSON.parse(jsonValue)[i].text}`;
+  }
+  return dataString;
+}
+__name(formatData, "formatData");
+
+// src/dom.ts
+var backupbtn = $("backupbtn");
+var todoInput = $("todoInput");
+var todoCount = $("todoCount");
+var todoList = $("todoList");
+var deleteCompletedBtn = $("deletecompleted");
+var topicSelect = $("topics");
+var closebtn = $("closebtn");
+var currentTopic = "";
+function init() {
+  buildTopics();
+  getTasks(currentTopic);
+  on(todoInput, "keydown", function(event) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      addTask();
     }
-    if (parsedTopics != null) {
-      for (let index = 0; index < parsedTopics.length; index++) {
-        try {
-          const options = JSON.parse(`${parsedTopics[index].text}`);
-          buildSelectElement(options);
-        } catch (_err) {
-          console.log("error parsing: ", parsedTopics[index].text);
-        }
-      }
-    } else {
-      console.log(`No topics!`);
-      keyName = "topics";
-      tasks = [
-        {
-          text: `{"Todos": [{ "name": "App One", "value": "app1" }] }`,
-          disabled: false
-        },
-        {
-          text: `{"Topics": [{ "name": "Todo App Topics", "value": "topics" }] }`,
-          disabled: false
-        }
-      ];
-      saveTasks();
-      buildTopics();
-    }
   });
-}, "buildTopics");
-function saveTasks() {
-  const value = JSON.stringify(tasks, null, 2);
-  console.log(`SaveTasks - setting "${keyName}" to ${value}`);
-  thisDB.set(["TODO", keyName], value).then((_result) => {
-    thisDB.get(["TODO", keyName]);
+  on(deleteCompletedBtn, "click", () => {
+    deleteCompleted();
+    refreshDisplay();
   });
+  on(topicSelect, "change", () => {
+    currentTopic = topicSelect.value.toLowerCase();
+    console.log(`topicSelect change `, currentTopic);
+    getTasks(currentTopic);
+  });
+  on(closebtn, "click", () => {
+    console.log(`closebtn ${location.href}`);
+    window.open(location.href, "_self", "");
+    self.close();
+  });
+  on(backupbtn, "click", () => {
+    exportData();
+  });
+  refreshDisplay();
 }
-__name(saveTasks, "saveTasks");
-function deleteCompleted() {
-  const savedtasks = [];
-  tasks.forEach((task) => {
-    if (task.disabled === false)
-      savedtasks.push(task);
-  });
-  tasks = savedtasks;
-  saveTasks();
-}
-__name(deleteCompleted, "deleteCompleted");
+__name(init, "init");
 
 // src/templates.ts
 function taskTemplate(index, item) {
@@ -319,74 +368,87 @@ function refreshDisplay() {
 }
 __name(refreshDisplay, "refreshDisplay");
 
-// src/export.ts
-function exportData() {
-  const data = Object.assign({}, localStorage);
-  let content = "";
-  for (const element in data) {
-    content += formatData(data[element], element);
-    console.log(content);
-  }
-  ;
-  saveDataFile("data-dump.txt", content);
+// src/db.ts
+var thisDB;
+async function init2(dbServiceURL2) {
+  thisDB = new DbClient(dbServiceURL2, "KV", "todo");
+  await thisDB.init();
 }
-__name(exportData, "exportData");
-function formatData(jsonValue, element) {
-  const parsedValue = JSON.parse(jsonValue);
-  const len = parsedValue.length;
-  let dataString = `
-${element}:`;
-  for (let i = 0; i < len; i++) {
-    dataString += `
-   ${JSON.parse(jsonValue)[i].text}`;
+__name(init2, "init");
+var tasks = [];
+var keyName = "topics";
+function getTasks(key = "") {
+  keyName = key;
+  if (key.length) {
+    thisDB.get(["TODO", key]).then((data) => {
+      if (data === null) {
+        console.log(`No data found for ${keyName}`);
+      }
+      if (typeof data === "string") {
+        tasks = JSON.parse(data) || [];
+      } else {
+        tasks = data;
+      }
+      refreshDisplay();
+    });
   }
-  return dataString;
 }
-__name(formatData, "formatData");
-
-// src/dom.ts
-var backupbtn = $("backupbtn");
-var todoInput = $("todoInput");
-var todoCount = $("todoCount");
-var todoList = $("todoList");
-var deleteCompletedBtn = $("deletecompleted");
-var topicSelect = $("topics");
-var closebtn = $("closebtn");
-var currentTopic = "";
-function init() {
-  buildTopics();
-  getTasks(currentTopic);
-  on(todoInput, "keydown", function(event) {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      addTask();
+__name(getTasks, "getTasks");
+var buildTopics = /* @__PURE__ */ __name(() => {
+  thisDB.get(["TODO", "topics"]).then((data) => {
+    let parsedTopics;
+    if (typeof data === "string") {
+      parsedTopics = JSON.parse(data);
+    } else {
+      parsedTopics = data;
+    }
+    if (parsedTopics != null) {
+      for (let index = 0; index < parsedTopics.length; index++) {
+        try {
+          const options = JSON.parse(`${parsedTopics[index].text}`);
+          buildSelectElement(options);
+        } catch (_err) {
+          console.log("error parsing: ", parsedTopics[index].text);
+        }
+      }
+    } else {
+      console.log(`No topics!`);
+      keyName = "topics";
+      tasks = [
+        {
+          text: `{"Todos": [{ "name": "App One", "value": "app1" }] }`,
+          disabled: false
+        },
+        {
+          text: `{"Topics": [{ "name": "Todo App Topics", "value": "topics" }] }`,
+          disabled: false
+        }
+      ];
+      saveTasks();
+      buildTopics();
     }
   });
-  on(deleteCompletedBtn, "click", () => {
-    deleteCompleted();
-    refreshDisplay();
-  });
-  on(topicSelect, "change", () => {
-    currentTopic = topicSelect.value.toLowerCase();
-    console.log(`topicSelect change `, currentTopic);
-    getTasks(currentTopic);
-  });
-  on(closebtn, "click", () => {
-    console.log(`closebtn ${location.href}`);
-    window.open(location.href, "_self", "");
-    self.close();
-  });
-  on(backupbtn, "click", () => {
-    exportData();
-  });
-  refreshDisplay();
+}, "buildTopics");
+function saveTasks() {
+  const value = JSON.stringify(tasks, null, 2);
+  console.log(`SaveTasks - setting "${keyName}" to ${value}`);
+  thisDB.set(["TODO", keyName], value);
 }
-__name(init, "init");
+__name(saveTasks, "saveTasks");
+function deleteCompleted() {
+  const savedtasks = [];
+  tasks.forEach((task) => {
+    if (task.disabled === false)
+      savedtasks.push(task);
+  });
+  tasks = savedtasks;
+  saveTasks();
+}
+__name(deleteCompleted, "deleteCompleted");
 
 // src/main.ts
 var RunningLocal = window.location.href === "http://localhost:8080/";
 console.log(`RunningLocal`, RunningLocal);
 var dbServiceURL = RunningLocal ? "http://localhost:9099" : "https://bueno-rpc.deno.dev/";
-var thisDB2 = new DbClient(dbServiceURL, "todo");
-await thisDB2.init();
+await init2(dbServiceURL);
 init();
