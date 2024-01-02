@@ -17,6 +17,7 @@ __name(saveDataFile, "saveDataFile");
 function buildSelectElement(options) {
   const selectElement = $("topics");
   for (const prop in options) {
+    console.log("prop: ", prop);
     if (options.hasOwnProperty(prop)) {
       addOptionGroup(selectElement, prop, options[prop]);
     }
@@ -24,14 +25,14 @@ function buildSelectElement(options) {
 }
 __name(buildSelectElement, "buildSelectElement");
 function addOptionGroup(selectElement, label, options) {
-  let len = options.length;
+  const len = options.length;
   let optionElement;
-  let optionGroup = document.createElement("optgroup");
+  const optionGroup = document.createElement("optgroup");
   optionGroup.label = label;
   for (let i = 0; i < len; ++i) {
     optionElement = document.createElement("option");
-    optionElement.textContent = options[i].name;
-    optionElement.value = options[i].value;
+    optionElement.textContent = options[i].title;
+    optionElement.value = options[i].key;
     optionGroup.appendChild(optionElement);
   }
   selectElement.appendChild(optionGroup);
@@ -396,16 +397,12 @@ function getTasks(key = "") {
 __name(getTasks, "getTasks");
 var buildTopics = /* @__PURE__ */ __name(() => {
   thisDB.get(["TODO", "topics"]).then((data) => {
-    let parsedTopics;
-    if (typeof data === "string") {
-      parsedTopics = JSON.parse(data);
-    } else {
-      parsedTopics = data;
-    }
+    const parsedTopics = JSON.parse(data);
     if (parsedTopics != null) {
       for (let index = 0; index < parsedTopics.length; index++) {
         try {
           const options = JSON.parse(`${parsedTopics[index].text}`);
+          console.info("options ", options);
           buildSelectElement(options);
         } catch (_err) {
           console.log("error parsing: ", parsedTopics[index].text);
@@ -416,11 +413,11 @@ var buildTopics = /* @__PURE__ */ __name(() => {
       keyName = "topics";
       tasks = [
         {
-          text: `{"Todos": [{ "name": "App One", "value": "app1" }] }`,
+          text: `{"Todos": [{ "title": "App One", "key": "app1" }] }`,
           disabled: false
         },
         {
-          text: `{"Topics": [{ "name": "Todo App Topics", "value": "topics" }] }`,
+          text: `{"Topics": [{ "title": "Todo App Topics", "key": "topics" }] }`,
           disabled: false
         }
       ];

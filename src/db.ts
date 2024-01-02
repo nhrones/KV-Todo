@@ -39,22 +39,29 @@ export function getTasks(key = "") {
    }
 }
 
+const parseTopics = (topics: string) => {
+   const parsedTopics = JSON.parse(topics)
+   console.info('parsedTopics', parsedTopics)
+   // need to parse text: to 
+   return parsedTopics
+}
+
 /**
  * build a set of select options
  */
 export const buildTopics = () => {
 
-   thisDB.get(["TODO", "topics"]).then((data) => {
-      let parsedTopics
-      if (typeof data === 'string') {
-         parsedTopics = JSON.parse(data)
-      } else {
-         parsedTopics = data
-      }
+   thisDB.get(["TODO", "topics"]).then((data: unknown) => {
+
+      const parsedTopics = JSON.parse(data as string)
+
+      //const parsedTopics = parseTopics(data as string) //JSON.parse(data as string)
+
       if (parsedTopics != null) {
          for (let index = 0; index < parsedTopics.length; index++) {
             try {
                const options = JSON.parse(`${parsedTopics[index].text}`)
+               console.info('options ', options)
                buildSelectElement(options)
             } catch (_err) {
                console.log('error parsing: ', parsedTopics[index].text)
@@ -66,11 +73,11 @@ export const buildTopics = () => {
          keyName = 'topics'
          tasks = [
             {
-               text: `{"Todos": [{ "name": "App One", "value": "app1" }] }`,
+               text: `{"Todos": [{ "title": "App One", "key": "app1" }] }`,
                disabled: false
             },
             {
-               text: `{"Topics": [{ "name": "Todo App Topics", "value": "topics" }] }`,
+               text: `{"Topics": [{ "title": "Todo App Topics", "key": "topics" }] }`,
                disabled: false
             }
          ]
