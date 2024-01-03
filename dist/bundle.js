@@ -380,7 +380,7 @@ var keyName = "topics";
 function getTasks(key = "") {
   keyName = key;
   if (key.length) {
-    thisDB.get(["TODO", key]).then((data) => {
+    thisDB.get(["todo", key]).then((data) => {
       if (data === null) {
         console.log(`No data found for ${keyName}`);
       }
@@ -415,7 +415,7 @@ var parseTopics = /* @__PURE__ */ __name((topics) => {
   return parsedTopics;
 }, "parseTopics");
 var buildTopics = /* @__PURE__ */ __name(() => {
-  thisDB.get(["TODO", "topics"]).then((data) => {
+  thisDB.get(["todo", "topics"]).then((data) => {
     const parsedTopics = parseTopics(data);
     if (parsedTopics != null) {
       for (let index = 0; index < parsedTopics.length; index++) {
@@ -447,7 +447,7 @@ var buildTopics = /* @__PURE__ */ __name(() => {
 function saveTasks() {
   const value = JSON.stringify(tasks, null, 2);
   console.log(`SaveTasks - setting "${keyName}" to ${value}`);
-  thisDB.set(["TODO", keyName], value);
+  thisDB.set(["todo", keyName], value);
 }
 __name(saveTasks, "saveTasks");
 function deleteCompleted() {
@@ -462,7 +462,7 @@ function deleteCompleted() {
 __name(deleteCompleted, "deleteCompleted");
 
 // src/main.ts
-var RunningLocal = window.location.href === "http://localhost:8080/";
+var RunningLocal = false;
 console.log(`RunningLocal`, RunningLocal);
 var dbServiceURL = RunningLocal ? "http://localhost:9099" : "https://todo-rpc.deno.dev/";
 await init2(dbServiceURL);

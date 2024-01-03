@@ -24,7 +24,7 @@ let keyName = 'topics'
 export function getTasks(key = "") {
    keyName = key
    if (key.length) {
-      thisDB.get(["TODO", key]).then((data) => {
+      thisDB.get(["todo", key]).then((data) => {
          if (data === null) {
             console.log(`No data found for ${keyName}`)
          }
@@ -38,6 +38,7 @@ export function getTasks(key = "") {
       })
    }
 }
+
 
 
 /**
@@ -71,7 +72,7 @@ const parseTopics = (topics: string) => {
  * build a set of select options
  */
 export const buildTopics = () => {
-   thisDB.get(["TODO", "topics"]).then((data: unknown) => {
+   thisDB.get(["todo", "topics"]).then((data: unknown) => {
       const parsedTopics = parseTopics(data as string)//JSON.parse(data as string)
       if (parsedTopics != null) {
          for (let index = 0; index < parsedTopics.length; index++) {
@@ -108,7 +109,7 @@ export const buildTopics = () => {
 export function saveTasks() {
    const value = JSON.stringify(tasks, null, 2);
    console.log(`SaveTasks - setting "${keyName}" to ${value}`);
-   thisDB.set(["TODO", keyName], value)
+   thisDB.set(["todo", keyName], value)
 }
 
 /** 

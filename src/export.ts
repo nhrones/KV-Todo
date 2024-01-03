@@ -1,7 +1,8 @@
+// deno-lint-ignore-file no-explicit-any
 import { saveDataFile } from './utils.ts'
 
 /**
- * export data from localStorage
+ * export data from persitence
  * @returns void - calls saveDataFile()
  */
 export function exportData() {
@@ -20,7 +21,7 @@ export function exportData() {
  * @param {string} element 
  * @returns a formated string 
  */
-function formatData(jsonValue, element) {
+function formatData(jsonValue: any, element: any) {
    const parsedValue = JSON.parse(jsonValue)
    const len = parsedValue.length
    let dataString = `
