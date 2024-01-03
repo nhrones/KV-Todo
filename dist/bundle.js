@@ -232,29 +232,25 @@ var rpcRequest = /* @__PURE__ */ __name((procedure, params) => {
 }, "rpcRequest");
 
 // src/export.ts
-function exportData() {
-  const data = Object.assign({}, localStorage);
+async function exportData() {
+  const data = await fetchAll();
+  console.info("todo export data: ", data);
   let content = "";
-  for (const element in data) {
-    content += formatData(data[element], element);
-    console.log(content);
+  if (Array.isArray(data)) {
+    for (let index = 0; index < data.length; index++) {
+      const element = data[index];
+      content += `${element[0][1]}
+`;
+      for (let i = 0; i < element.length; i++) {
+        content += ` ${i}   ${JSON.parse(element[1])[0].text}
+`;
+      }
+    }
+    ;
   }
-  ;
   saveDataFile("data-dump.txt", content);
 }
 __name(exportData, "exportData");
-function formatData(jsonValue, element) {
-  const parsedValue = JSON.parse(jsonValue);
-  const len = parsedValue.length;
-  let dataString = `
-${element}:`;
-  for (let i = 0; i < len; i++) {
-    dataString += `
-   ${JSON.parse(jsonValue)[i].text}`;
-  }
-  return dataString;
-}
-__name(formatData, "formatData");
 
 // src/dom.ts
 var backupbtn = $("backupbtn");
@@ -375,6 +371,17 @@ async function init2(dbServiceURL2) {
   await thisDB.init();
 }
 __name(init2, "init");
+async function fetchAll() {
+  let queryset = await thisDB.fetchQuerySet();
+  if (queryset === null) {
+    console.log(`No data found for todos!`);
+  }
+  if (typeof queryset === "string") {
+    queryset = JSON.parse(queryset) || [];
+  }
+  return queryset;
+}
+__name(fetchAll, "fetchAll");
 var tasks = [];
 var keyName = "topics";
 function getTasks(key = "") {
@@ -395,7 +402,9 @@ function getTasks(key = "") {
 }
 __name(getTasks, "getTasks");
 var parseTopics = /* @__PURE__ */ __name((topics) => {
+  console.log(`topics: ${topics}`);
   const parsedTopics = JSON.parse(topics);
+  console.info("parsedTopics ", parsedTopics);
   for (let index = 0; index < parsedTopics.length; index++) {
     const thisTopic = parsedTopics[index];
     const txt = thisTopic.text;
@@ -462,7 +471,7 @@ function deleteCompleted() {
 __name(deleteCompleted, "deleteCompleted");
 
 // src/main.ts
-var RunningLocal = false;
+var RunningLocal = window.location.href === "http://localhost:8080/";
 console.log(`RunningLocal`, RunningLocal);
 var dbServiceURL = RunningLocal ? "http://localhost:9099" : "https://todo-rpc.deno.dev/";
 await init2(dbServiceURL);

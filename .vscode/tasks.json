@@ -13,7 +13,7 @@
             "rpcService.ts"
          ],
          "options": {
-            "cwd": "C:/Users/nhron/dev/GitHub/DB/Bueno/BuenoRPC"
+            "cwd": "C:/Users/nhron/dev/GitHub/DB/Kv-Todo-App/TodoRPC"
          },
          "problemMatcher": [
             "$deno"

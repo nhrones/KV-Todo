@@ -10,6 +10,20 @@ export async function init(dbServiceURL: string) {
    await thisDB.init()
 }
 
+// fetch all todo data
+export async function fetchAll() {
+   let queryset = await thisDB.fetchQuerySet()
+   if (queryset === null) {
+      console.log(`No data found for todos!`)
+   }
+   if (typeof queryset === 'string') {
+      queryset = JSON.parse(queryset) || []
+   }
+   return queryset
+}
+
+
+
 /** an array of todo tasks to be presented */
 export let tasks: { text: string, disabled: boolean }[] = []
 
@@ -47,7 +61,10 @@ export function getTasks(key = "") {
  * @returns 
  */
 const parseTopics = (topics: string) => {
+
+   console.log(`topics: ${topics}`)
    const parsedTopics = JSON.parse(topics)
+   console.info('parsedTopics ',parsedTopics)
    for (let index = 0; index < parsedTopics.length; index++) {
       const thisTopic = parsedTopics[index]
       const txt = thisTopic.text as string
