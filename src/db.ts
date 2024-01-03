@@ -17,7 +17,7 @@ export let tasks: { text: string, disabled: boolean }[] = []
 let keyName = 'topics'
 
 /**
- * Retrieve array of tasks the service     
+ * Retrieve array of tasks from the service     
  * or initialize an empty task array 
  * @param {string} key the name of the record to fetch (data-key)
  */
@@ -39,10 +39,31 @@ export function getTasks(key = "") {
    }
 }
 
+
+/**
+ * parseTopics
+ * @param topics 
+ * @returns 
+ */
 const parseTopics = (topics: string) => {
    const parsedTopics = JSON.parse(topics)
-   console.info('parsedTopics', parsedTopics)
-   // need to parse text: to 
+   for (let index = 0; index < parsedTopics.length; index++) {
+      const thisTopic = parsedTopics[index]
+      const txt = thisTopic.text as string
+
+      const lines = txt.split('\n')
+      const topic = lines[0].trim()
+      let newText = `{"${topic}":[`
+      for (let i = 1; i < lines.length; i++) {
+         const element = lines[i];
+         const items = element.split(',')
+         const title = items[0]
+         const keyName = items[1].split('=')[1].trim()
+         newText += `{ "title": "${title}", "key": "${keyName}" },`
+      }
+      newText = newText.substring(0, newText.length - 1) + `] }`
+      parsedTopics[index].text = newText
+   }
    return parsedTopics
 }
 
@@ -50,18 +71,12 @@ const parseTopics = (topics: string) => {
  * build a set of select options
  */
 export const buildTopics = () => {
-
    thisDB.get(["TODO", "topics"]).then((data: unknown) => {
-
-      const parsedTopics = JSON.parse(data as string)
-
-      //const parsedTopics = parseTopics(data as string) //JSON.parse(data as string)
-
+      const parsedTopics = parseTopics(data as string)//JSON.parse(data as string)
       if (parsedTopics != null) {
          for (let index = 0; index < parsedTopics.length; index++) {
             try {
                const options = JSON.parse(`${parsedTopics[index].text}`)
-               console.info('options ', options)
                buildSelectElement(options)
             } catch (_err) {
                console.log('error parsing: ', parsedTopics[index].text)

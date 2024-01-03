@@ -10,7 +10,6 @@ import { $ } from './utils.ts'
 export function buildSelectElement(options: any) {
    const selectElement = $("topics") 
    for (const prop in options) {
-      console.log('prop: ', prop)
       if (options.hasOwnProperty(prop)) {
          addOptionGroup(selectElement, prop, options[prop]);
       }

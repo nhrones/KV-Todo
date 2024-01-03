@@ -17,7 +17,6 @@ __name(saveDataFile, "saveDataFile");
 function buildSelectElement(options) {
   const selectElement = $("topics");
   for (const prop in options) {
-    console.log("prop: ", prop);
     if (options.hasOwnProperty(prop)) {
       addOptionGroup(selectElement, prop, options[prop]);
     }
@@ -395,14 +394,33 @@ function getTasks(key = "") {
   }
 }
 __name(getTasks, "getTasks");
+var parseTopics = /* @__PURE__ */ __name((topics) => {
+  const parsedTopics = JSON.parse(topics);
+  for (let index = 0; index < parsedTopics.length; index++) {
+    const thisTopic = parsedTopics[index];
+    const txt = thisTopic.text;
+    const lines = txt.split("\n");
+    const topic = lines[0].trim();
+    let newText = `{"${topic}":[`;
+    for (let i = 1; i < lines.length; i++) {
+      const element = lines[i];
+      const items = element.split(",");
+      const title = items[0];
+      const keyName2 = items[1].split("=")[1].trim();
+      newText += `{ "title": "${title}", "key": "${keyName2}" },`;
+    }
+    newText = newText.substring(0, newText.length - 1) + `] }`;
+    parsedTopics[index].text = newText;
+  }
+  return parsedTopics;
+}, "parseTopics");
 var buildTopics = /* @__PURE__ */ __name(() => {
   thisDB.get(["TODO", "topics"]).then((data) => {
-    const parsedTopics = JSON.parse(data);
+    const parsedTopics = parseTopics(data);
     if (parsedTopics != null) {
       for (let index = 0; index < parsedTopics.length; index++) {
         try {
           const options = JSON.parse(`${parsedTopics[index].text}`);
-          console.info("options ", options);
           buildSelectElement(options);
         } catch (_err) {
           console.log("error parsing: ", parsedTopics[index].text);
