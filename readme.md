@@ -1,12 +1,15 @@
 ## Todo List App
 
 This simple app allows me to organize Todo-Tasks by subject and project.    
-I've used a simple selectBox to select a project.    
-Once selected, all tasks for that project are listed.    
-Clicking on a task, allows you to edit the text in a multi-line TextArea element.    
+I've used a simple selectBox to select projects from Select-Groups.    
+Once selected, all tasks for that project are listed. 
+You can add a task for the current project by entering text in the task input.    
+Clicking on a task, allows you to edit its text in a multi-line TextArea element.    
 
+## Note: 
+The following link connects to my personal todo-kvDB on Deno Deploy.    
+You can try all features, but no mutations will be persisted with this Guest-link.   
 ### Try it:  https://nhrones.github.io/KV-Todo/
-
 
 <br/>
 
