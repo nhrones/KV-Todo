@@ -43,9 +43,9 @@ in the drop-down, and then click on the text to edit it. Changes will show on ta
 
 ![Alt text](./media/topics.png)
 
-This version uses DenoKv on Deploy. It uses an SSE-RPC to handle remote CRUD.
-See service code: https://github.com/nhrones/TodoRPC
-See client code: https://github.com/nhrones/BuenoRPC-Client     
+This version persists to DenoKv on Deploy. It uses an SSE-RPC to handle remote CRUD.
+See RPC-service code: https://github.com/nhrones/TodoRPC
+See RPC-client code: https://github.com/nhrones/BuenoRPC-Client     
 
 ## Deno Desktop App
 I started this project as a DWM-ReactiveUI app.     
