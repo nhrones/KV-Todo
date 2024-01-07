@@ -29,7 +29,7 @@ The `Delete Completed` button on the bottom-right will delete any checked tasks.
 <br/>
 
 ## Todo Topics
-The dropdown box shows all current option groups and todo topics.    
+The dropdown box shows all current OptionGroups and todo topics (options).    
 These are configurable by the user; see below.    
 The image above shows the `DWM-ReactiveUI` topic selected with it's current task list.    
 
@@ -39,14 +39,13 @@ The image above shows the `DWM-ReactiveUI` topic selected with it's current task
 
 ## Configurable Topics
 Note, the `Topic-Select-List` is configurable directly in the app. Just select `Todo App Topics`        
-in the drop-down, and then click on the json-text to edit it. Changes will show on tab refresh.   
+in the drop-down, and then click on the text to edit it. Changes will show on tab refresh.   
 
 ![Alt text](./media/topics.png)
 
-This version uses localStorage.  I'll be _Deploying_ a version for DenoKv.    
-
-If something breaks, you can delete the localStorage file, and a blank template will auto install on next start.     
-See: ./selections.js/
+This version uses DenoKv on Deploy. It uses an SSE-RPC to handle remote CRUD.
+See service code: https://github.com/nhrones/TodoRPC
+See client code: https://github.com/nhrones/BuenoRPC-Client     
 
 ## Deno Desktop App
 I started this project as a DWM-ReactiveUI app.     
