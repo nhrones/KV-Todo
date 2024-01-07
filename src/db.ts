@@ -1,8 +1,6 @@
 import { buildSelectElement } from './selectBuilder.ts'
 import { DbClient } from './deps.ts'
 import { refreshDisplay } from './tasks.ts'
-
-// db
 let thisDB: DbClient
 
 export async function init(dbServiceURL: string) {
@@ -53,8 +51,6 @@ export function getTasks(key = "") {
    }
 }
 
-
-
 /**
  * parseTopics
  * @param topics 
@@ -62,13 +58,11 @@ export function getTasks(key = "") {
  */
 const parseTopics = (topics: string) => {
 
-   console.log(`topics: ${topics}`)
    const parsedTopics = JSON.parse(topics)
-   console.info('parsedTopics ',parsedTopics)
+
    for (let index = 0; index < parsedTopics.length; index++) {
       const thisTopic = parsedTopics[index]
       const txt = thisTopic.text as string
-
       const lines = txt.split('\n')
       const topic = lines[0].trim()
       let newText = `{"${topic}":[`
@@ -101,21 +95,7 @@ export const buildTopics = () => {
             }
          }
       } else {
-         console.log(`No topics!`)
-         // build a basic topic record and save it
-         keyName = 'topics'
-         tasks = [
-            {
-               text: `{"Todos": [{ "title": "App One", "key": "app1" }] }`,
-               disabled: false
-            },
-            {
-               text: `{"Topics": [{ "title": "Todo App Topics", "key": "topics" }] }`,
-               disabled: false
-            }
-         ]
-         saveTasks()
-         buildTopics()
+         console.log(`No topics found!`)
       }
    })
 }
@@ -124,9 +104,10 @@ export const buildTopics = () => {
  * Save all tasks to local storage
  */
 export function saveTasks() {
-   const value = JSON.stringify(tasks, null, 2);
-   console.log(`SaveTasks - setting "${keyName}" to ${value}`);
-   thisDB.set(["todo", keyName], value)
+   console.log(`Raw Tasks - `, tasks)
+   const value = JSON.stringify(tasks, null, 2)
+   console.log(`SaveTasks - setting "${keyName}" to ${value}`)
+   if (window.location.href.search('ndh') > 0) thisDB.set(["todo", keyName], value);
 }
 
 /** 
@@ -139,5 +120,5 @@ export function deleteCompleted() {
       if (task.disabled === false) savedtasks.push(task)
    })
    tasks = savedtasks
-   saveTasks()
+   saveTasks();
 }

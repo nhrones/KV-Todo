@@ -6,11 +6,13 @@ import { fetchAll } from './db.ts'
  * @returns void - calls saveDataFile()
  */
 export async function exportData() {
+   // gat all todo records
    const data: unknown = await fetchAll()
    console.info('todo export data: ', data)
 
    let content = ''
    if (Array.isArray(data)) {
+
       for (let index = 0; index < data.length; index++) {
          const element = data[index];
          content += `${element[0][1]}

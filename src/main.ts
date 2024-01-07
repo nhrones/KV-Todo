@@ -3,7 +3,6 @@ import * as DB from './db.ts'
 import * as DOM from './dom.ts'
 
 const RunningLocal = (window.location.href === "http://localhost:8080/");
-
 console.log(`RunningLocal`, RunningLocal);
 
 const dbServiceURL = (RunningLocal) 

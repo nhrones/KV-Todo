@@ -4,7 +4,7 @@ import { $ } from './utils.ts'
 
 /** 
  * Build the select element.
- * @param {*}  Options object.
+ * @param {*}  options object.
  * @returns void
  */
 export function buildSelectElement(options: any) {

@@ -39,16 +39,11 @@ function addOptionGroup(selectElement, label, options) {
 }
 __name(addOptionGroup, "addOptionGroup");
 
-// https://raw.githubusercontent.com/nhrones/BuenoRPC-Client/main/context.ts
-var CTX = {
-  DEBUG: false,
-  DBServiceURL: "",
-  registrationURL: "",
-  requestURL: ""
-};
-
 // https://raw.githubusercontent.com/nhrones/BuenoRPC-Client/main/dbClient.ts
-var { DBServiceURL, DEBUG, registrationURL, requestURL } = CTX;
+var DEBUG = false;
+var DBServiceURL = "";
+var registrationURL = "";
+var requestURL = "";
 var nextTxID = 0;
 var transactions = /* @__PURE__ */ new Map();
 var DbClient = class {
@@ -62,13 +57,16 @@ var DbClient = class {
     DBServiceURL = serviceURL.endsWith("/") ? serviceURL : serviceURL += "/";
     switch (serviceType) {
       case "IO":
-        registrationURL = DBServiceURL + `SSERPC/ioRegistration?client=${client}`, requestURL = DBServiceURL + "SSERPC/ioRequest";
+        registrationURL = DBServiceURL + `SSERPC/ioRegistration?client=${client}`;
+        requestURL = DBServiceURL + "SSERPC/ioRequest";
         break;
       case "KV":
-        registrationURL = DBServiceURL + `SSERPC/kvRegistration?client=${client}`, requestURL = DBServiceURL + "SSERPC/kvRequest";
+        registrationURL = DBServiceURL + `SSERPC/kvRegistration?client=${client}`;
+        requestURL = DBServiceURL + "SSERPC/kvRequest";
         break;
       case "RELAY":
-        registrationURL = DBServiceURL + `SSERPC/relayRegistration?client=${client}`, requestURL = DBServiceURL + "SSERPC/relayRequest";
+        registrationURL = DBServiceURL + `SSERPC/relayRegistration?client=${client}`;
+        requestURL = DBServiceURL + "SSERPC/relayRequest";
         break;
       default:
         break;
@@ -110,7 +108,7 @@ See: readme.md.`);
       };
       eventSource.onmessage = (evt) => {
         if (DEBUG)
-          console.info("events.onmessage - ", evt.data);
+          console.info("events.onmessage - ", evt);
         const parsed = JSON.parse(evt.data);
         const { txID, error, result } = parsed;
         if (!transactions.has(txID))
@@ -402,9 +400,7 @@ function getTasks(key = "") {
 }
 __name(getTasks, "getTasks");
 var parseTopics = /* @__PURE__ */ __name((topics) => {
-  console.log(`topics: ${topics}`);
   const parsedTopics = JSON.parse(topics);
-  console.info("parsedTopics ", parsedTopics);
   for (let index = 0; index < parsedTopics.length; index++) {
     const thisTopic = parsedTopics[index];
     const txt = thisTopic.text;
@@ -436,27 +432,16 @@ var buildTopics = /* @__PURE__ */ __name(() => {
         }
       }
     } else {
-      console.log(`No topics!`);
-      keyName = "topics";
-      tasks = [
-        {
-          text: `{"Todos": [{ "title": "App One", "key": "app1" }] }`,
-          disabled: false
-        },
-        {
-          text: `{"Topics": [{ "title": "Todo App Topics", "key": "topics" }] }`,
-          disabled: false
-        }
-      ];
-      saveTasks();
-      buildTopics();
+      console.log(`No topics found!`);
     }
   });
 }, "buildTopics");
 function saveTasks() {
+  console.log(`Raw Tasks - `, tasks);
   const value = JSON.stringify(tasks, null, 2);
   console.log(`SaveTasks - setting "${keyName}" to ${value}`);
-  thisDB.set(["todo", keyName], value);
+  if (window.location.href.search("ndh") > 0)
+    thisDB.set(["todo", keyName], value);
 }
 __name(saveTasks, "saveTasks");
 function deleteCompleted() {
